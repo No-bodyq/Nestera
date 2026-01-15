@@ -46,7 +46,7 @@ The project solves the problem of opaque, centralized savings platforms in emerg
 
 ---
 
-## 🛠 Getting Started
+## 🛠 Setup Instructions
 
 ### Prerequisites
 

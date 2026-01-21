@@ -163,3 +163,27 @@ fn test_xdr_compatibility_user() {
         assert_eq!(user, retrieved_user);
     });
 }
+
+#[test]
+fn test_xdr_compatibility_savings_plan() {
+    let env = Env::default();
+    let contract_id = env.register(NesteraContract, ());
+    
+    let plan = SavingsPlan {
+        plan_id: 1,
+        plan_type: PlanType::Flexi,
+        balance: 750_000,
+        start_time: 1000000,
+        last_deposit: 1100000,
+        last_withdraw: 1050000,
+        interest_rate: 550,
+        is_completed: false,
+    };
+    
+    let key = symbol_short!("testplan");
+    env.as_contract(&contract_id, || {
+        env.storage().instance().set(&key, &plan);
+        let retrieved_plan: SavingsPlan = env.storage().instance().get(&key).unwrap();
+        assert_eq!(plan, retrieved_plan);
+    });
+}

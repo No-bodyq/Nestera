@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, contracterror, Address};
+use soroban_sdk::{contracttype, contracterror, Address,Symbol};
 
 /// Global error enum for the savings contract
 #[contracterror]
@@ -14,12 +14,7 @@ pub enum SavingsError {
 }
 
 /// Storage keys for contract data
-#[contracttype]
-#[derive(Clone)]
-pub enum DataKey {
-    /// User data stored by address
-    User(Address),
-}
+
 
 /// User account data structure
 #[contracttype]
@@ -41,8 +36,45 @@ impl User {
     }
 }
 
-impl Default for User {
-    fn default() -> Self {
-        Self::new()
-    }
+// impl Default for User {
+//     fn default() -> Self {
+//         Self::new()
+//     }
+
+/// Represents the different types of savings plans available in Nestera
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum PlanType {
+    Flexi,
+    Lock(u64),
+    Goal(Symbol, i128, u32),
+    Group(u64, bool, u32, i128),
 }
+
+/// Represents an individual savings plan for a user
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SavingsPlan {
+    pub plan_id: u64,
+    pub plan_type: PlanType,
+    pub balance: i128,
+    pub start_time: u64,
+    pub last_deposit: u64,
+    pub last_withdraw: u64,
+    /// Annual Percentage Yield (APY) as an integer (e.g., 500 = 5.00%)
+    pub interest_rate: u32,
+    pub is_completed: bool,
+}
+
+
+
+/// Storage keys for the contract's persistent data
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum DataKey {
+    Admin,
+    User(Address),
+    /// Maps a (user address, plan_id) tuple to a SavingsPlan
+    SavingsPlan(Address, u64),
+}
+

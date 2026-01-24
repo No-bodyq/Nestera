@@ -817,3 +817,138 @@ fn test_flexi_invalid_amount() {
     let result = client.try_deposit_flexi(&user, &0);
     assert_eq!(result, Err(Ok(SavingsError::InvalidAmount)));
 }
+// =============================================================================
+// View Function Tests
+// =============================================================================
+
+#[test]
+fn test_view_lock_saves() {
+    let (env, client) = setup_test_env();
+    let (_, admin_public_key) = generate_keypair(&env);
+    client.initialize(&admin_public_key);
+    let user = Address::generate(&env);
+
+    env.mock_all_auths();
+    match client.initialize_user(&user) {
+        _ => {}
+    }
+
+    // Create a Lock Save
+    let lock_until = 2000000;
+    // We can't call `create_savings_plan` with Lock directly because we need to pass strict types?
+    // Actually the helper `create_savings_plan` takes `PlanType`.
+    let _plan_id = client.create_savings_plan(&user, &PlanType::Lock(lock_until), &1000_i128);
+
+    // Test get_user_ongoing_lock_saves
+    let ongoing = client.get_user_ongoing_lock_saves(&user);
+    assert_eq!(ongoing.len(), 1);
+    assert_eq!(ongoing.get(0).unwrap().balance, 1000_i128);
+    assert_eq!(ongoing.get(0).unwrap().locked_until, lock_until);
+
+    // Test get_lock_save
+    let lock_save = client.get_lock_save(&user, &ongoing.get(0).unwrap().plan_id);
+    assert_eq!(lock_save.balance, 1000_i128);
+
+    // Test get_user_matured_lock_saves (empty initially)
+    let matured = client.get_user_matured_lock_saves(&user);
+    assert_eq!(matured.len(), 0);
+
+    // Advance time to maturity
+    set_ledger_timestamp(&env, lock_until + 1);
+
+    // Now it should be matured
+    let matured_after = client.get_user_matured_lock_saves(&user);
+    assert_eq!(matured_after.len(), 1);
+}
+
+#[test]
+fn test_view_goal_saves() {
+    let (env, client) = setup_test_env();
+    let (_, admin_public_key) = generate_keypair(&env);
+    client.initialize(&admin_public_key);
+    let user = Address::generate(&env);
+    env.mock_all_auths();
+    match client.initialize_user(&user) {
+        _ => {}
+    }
+
+    let goal_name = symbol_short!("car");
+    let target = 50000_i128;
+    let _plan_id = client.create_savings_plan(
+        &user,
+        &PlanType::Goal(goal_name.clone(), target, 1),
+        &1000_i128,
+    );
+
+    // Test get_user_live_goal_saves
+    let live = client.get_user_live_goal_saves(&user);
+    assert_eq!(live.len(), 1);
+    let save = live.get(0).unwrap();
+    assert_eq!(save.target_amount, target);
+    assert_eq!(save.goal_name, goal_name);
+    assert_eq!(save.is_completed, false);
+
+    // Test get_goal_save
+    let goal_save = client.get_goal_save(&user, &save.plan_id);
+    assert_eq!(goal_save.balance, 1000_i128);
+
+    // Test completed (empty)
+    let completed = client.get_user_completed_goal_saves(&user);
+    assert_eq!(completed.len(), 0);
+}
+
+#[test]
+fn test_view_group_saves() {
+    let (env, client) = setup_test_env();
+    let (_, admin_public_key) = generate_keypair(&env);
+    client.initialize(&admin_public_key);
+    let user = Address::generate(&env);
+    env.mock_all_auths();
+    match client.initialize_user(&user) {
+        _ => {}
+    }
+
+    let group_id = 999;
+    let target = 100000_i128;
+    let _plan_id = client.create_savings_plan(
+        &user,
+        &PlanType::Group(group_id, true, 1, target),
+        &1000_i128,
+    );
+
+    // Test get_user_live_group_saves
+    let live = client.get_user_live_group_saves(&user);
+    assert_eq!(live.len(), 1);
+    let save = live.get(0).unwrap();
+    assert_eq!(save.group_id, group_id);
+
+    // Test get_group_save
+    let group_save = client.get_group_save(&user, &save.plan_id);
+    assert_eq!(group_save.balance, 1000_i128);
+}
+
+#[test]
+fn test_is_group_member() {
+    let (env, client) = setup_test_env();
+    let (_, admin_public_key) = generate_keypair(&env);
+    client.initialize(&admin_public_key);
+    let user = Address::generate(&env);
+    env.mock_all_auths();
+    match client.initialize_user(&user) {
+        _ => {}
+    }
+
+    let group_id = 123;
+
+    // Initially not a member
+    assert_eq!(client.is_group_member(&group_id, &user), false);
+
+    // Join group (create plan)
+    client.create_savings_plan(&user, &PlanType::Group(group_id, true, 1, 1000), &500);
+
+    // Now should be member
+    assert_eq!(client.is_group_member(&group_id, &user), true);
+
+    // Check contribution
+    assert_eq!(client.get_group_member_contribution(&group_id, &user), 500);
+}

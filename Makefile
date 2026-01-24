@@ -6,8 +6,8 @@ test: build
 	cargo test
 
 build:
-	stellar contract build
-	@ls -l target/wasm32v1-none/release/*.wasm
+	cargo build --target wasm32-unknown-unknown --release --manifest-path contracts/Cargo.toml
+	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 fmt:
 	cargo fmt --all

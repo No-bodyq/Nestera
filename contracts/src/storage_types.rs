@@ -1,5 +1,4 @@
-use soroban_sdk::{contracttype, contracterror, Address, Symbol};
-use soroban_sdk::{contracttype, Address, String, Symbol};
+use soroban_sdk::{contracterror, contracttype, Address, String, Symbol};
 
 /// Represents the different types of savings plans available in Nestera
 #[contracttype]
@@ -88,6 +87,7 @@ pub enum SavingsError {
     LockNotMatured = 5,
     AlreadyWithdrawn = 6,
     Unauthorized = 7,
+}
 /// Represents a Goal Save plan with target amount
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]

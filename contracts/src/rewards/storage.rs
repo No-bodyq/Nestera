@@ -1,6 +1,8 @@
 use super::storage_types::{RewardsDataKey, UserRewards};
 use crate::errors::SavingsError;
-use soroban_sdk::{Address, Env};
+use crate::rewards::config::get_rewards_config;
+use crate::rewards::storage_types::RewardsConfig;
+use soroban_sdk::{symbol_short, Address, Env};
 
 /// Fetches user rewards or returns a default empty state
 pub fn get_user_rewards(env: &Env, user: Address) -> UserRewards {
@@ -69,4 +71,42 @@ pub fn reset_streak(env: &Env, user: Address) {
     let mut rewards = get_user_rewards(env, user.clone());
     rewards.current_streak = 0;
     save_user_rewards(env, user, &rewards);
+}
+
+pub fn award_deposit_points(env: &Env, user: Address, amount: i128) -> Result<(), SavingsError> {
+    // 1. Fetch Config & Check if Enabled
+    let config = get_rewards_config(env)?;
+    if !config.enabled {
+        return Ok(()); // Zero impact when disabled
+    }
+
+    // 2. Fetch User State
+    let mut user_rewards = get_user_rewards(env, user.clone());
+
+    // 3. Calculate Base Points
+    // Using checked_mul to prevent overflow during calculation
+    let base_points = (amount as u128)
+        .checked_mul(config.points_per_token as u128)
+        .ok_or(SavingsError::Overflow)?;
+
+    // 4. Update State
+    user_rewards.total_points = user_rewards
+        .total_points
+        .checked_add(base_points)
+        .ok_or(SavingsError::Overflow)?;
+
+    user_rewards.lifetime_deposited = user_rewards
+        .lifetime_deposited
+        .checked_add(amount)
+        .ok_or(SavingsError::Overflow)?;
+
+    // 5. Save and Emit Event
+    save_user_rewards(env, user.clone(), &user_rewards);
+
+    env.events().publish(
+        (symbol_short!("rewards"), symbol_short!("awarded"), user),
+        base_points,
+    );
+
+    Ok(())
 }

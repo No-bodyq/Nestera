@@ -198,6 +198,8 @@ impl NesteraContract {
         ensure_not_paused(&env)?;
         invariants::assert_non_negative(initial_deposit)?;
 
+        rewards::storage::award_deposit_points(&env, user.clone(), initial_deposit)?;
+
         if !Self::is_initialized(env.clone()) {
             return Err(SavingsError::InternalError);
         }

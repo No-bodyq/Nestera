@@ -13,11 +13,14 @@ mod goal;
 mod group;
 mod invariants;
 mod lock;
-mod security;
+
 mod storage_types;
 mod ttl;
 mod upgrade;
 mod users;
+
+#[cfg(test)]
+mod security;
 
 mod rates;
 mod views;

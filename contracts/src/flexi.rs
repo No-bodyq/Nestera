@@ -5,6 +5,7 @@ use crate::errors::SavingsError;
 use crate::storage_types::{DataKey, User};
 use crate::ttl;
 use soroban_sdk::{symbol_short, Address, Env};
+use crate::invariants;
 
 /// Handles depositing funds into the Flexi Save pool.
 pub fn flexi_deposit(env: Env, user: Address, amount: i128) -> Result<(), SavingsError> {
@@ -92,6 +93,12 @@ pub fn flexi_withdraw(env: Env, user: Address, amount: i128) -> Result<(), Savin
     if amount <= 0 {
         return Err(SavingsError::InvalidAmount);
     }
+
+    // 1. Fetch the balance first
+    let current_balance = get_flexi_balance(&env, user.clone()).unwrap_or(0);
+
+    // 2. Now the variable 'current_balance' exists in this scope
+    invariants::assert_sufficient_balance(current_balance, amount)?;
 
     // 3. Calculate protocol fee
     let fee_bps: u32 = env

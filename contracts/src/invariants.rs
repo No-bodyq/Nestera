@@ -26,7 +26,7 @@ pub fn assert_sufficient_balance(balance: i128, amount: i128) -> Result<(), Savi
 }
 
 /// Checks if the contract is currently paused.
-pub fn assert_not_paused(env: &Env) -> Result<(), SavingsError> {
+pub fn assert_not_paused(_env: &Env) -> Result<(), SavingsError> {
     // This assumes you have a State or Config object in storage
     // Example: let is_paused = env.storage().instance().get::<_, bool>(&DataKey::Paused).unwrap_or(false);
     // if is_paused { return Err(SavingsError::ContractPaused); }

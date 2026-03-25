@@ -23,7 +23,7 @@ import { User } from '../user/entities/user.entity';
 import { SavingsService as BlockchainSavingsService } from '../blockchain/savings.service';
 import { PredictiveEvaluatorService } from './services/predictive-evaluator.service';
 
-export interface SavingsGoalProgress extends GoalProgressDto { }
+export type SavingsGoalProgress = GoalProgressDto;
 
 export interface UserSubscriptionWithLiveBalance extends UserSubscription {
   indexedAmount: number;
@@ -53,7 +53,7 @@ export class SavingsService {
     private readonly predictiveEvaluatorService: PredictiveEvaluatorService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
-  ) { }
+  ) {}
 
   async createProduct(dto: CreateProductDto): Promise<SavingsProduct> {
     if (dto.minAmount > dto.maxAmount) {
@@ -161,10 +161,10 @@ export class SavingsService {
       startDate: new Date(),
       endDate: product.tenureMonths
         ? (() => {
-          const d = new Date();
-          d.setMonth(d.getMonth() + product.tenureMonths);
-          return d;
-        })()
+            const d = new Date();
+            d.setMonth(d.getMonth() + product.tenureMonths);
+            return d;
+          })()
         : null,
     });
     return await this.subscriptionRepository.save(subscription);
@@ -267,10 +267,10 @@ export class SavingsService {
 
     const liveVaultBalanceStroops = user?.publicKey
       ? (
-        await this.blockchainSavingsService.getUserSavingsBalance(
-          user.publicKey,
-        )
-      ).total
+          await this.blockchainSavingsService.getUserSavingsBalance(
+            user.publicKey,
+          )
+        ).total
       : 0;
 
     // Calculate average yield rate from active subscriptions
@@ -351,11 +351,12 @@ export class SavingsService {
     );
 
     // Chronological Predictive Evaluator: Calculate projected balance at target date
-    const projectedBalance = this.predictiveEvaluatorService.calculateProjectedBalance(
-      currentBalance,
-      yieldRate,
-      goal.targetDate,
-    );
+    const projectedBalance =
+      this.predictiveEvaluatorService.calculateProjectedBalance(
+        currentBalance,
+        yieldRate,
+        goal.targetDate,
+      );
 
     // Determine if user is off track
     const isOffTrack = this.predictiveEvaluatorService.isOffTrack(
@@ -364,10 +365,11 @@ export class SavingsService {
     );
 
     // Calculate the gap between target and projected balance
-    const projectionGap = this.predictiveEvaluatorService.calculateProjectionGap(
-      targetAmount,
-      projectedBalance,
-    );
+    const projectionGap =
+      this.predictiveEvaluatorService.calculateProjectionGap(
+        targetAmount,
+        projectedBalance,
+      );
 
     return {
       id: goal.id,

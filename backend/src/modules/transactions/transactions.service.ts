@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Readable } from 'stream';
+import { format as csvFormat } from '@fast-csv/format';
 import { LedgerTransaction } from '../blockchain/entities/transaction.entity';
 import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
@@ -36,6 +38,58 @@ export class TransactionsService {
     });
 
     return new PageDto(transformedData, meta);
+  }
+
+  async streamTransactionsCsv(
+    userId: string,
+    queryDto: TransactionQueryDto,
+  ): Promise<Readable> {
+    const chunkSize = Number(queryDto.limit ?? 1000);
+    let offset = 0;
+
+    const csvStream = csvFormat({ headers: true, quoteColumns: true });
+
+    (async () => {
+      try {
+        while (true) {
+          const batch = await this.buildQuery(userId, queryDto)
+            .skip(offset)
+            .take(chunkSize)
+            .getMany();
+
+          if (!batch.length) {
+            break;
+          }
+
+          for (const tx of batch) {
+            const dto = this.transformToResponseDto(tx);
+            csvStream.write({
+              id: dto.id,
+              userId: dto.userId,
+              type: dto.type,
+              amount: dto.amount,
+              amountFormatted: dto.amountFormatted?.display ?? '',
+              publicKey: dto.publicKey ?? '',
+              eventId: dto.eventId,
+              transactionHash: dto.transactionHash ?? '',
+              ledgerSequence: dto.ledgerSequence ?? '',
+              poolId: dto.poolId ?? '',
+              assetId: dto.assetId ?? '',
+              metadata: dto.metadata ? JSON.stringify(dto.metadata) : '',
+              createdAt: dto.createdAt,
+            });
+          }
+
+          offset += chunkSize;
+        }
+      } catch (error) {
+        csvStream.destroy(error);
+      } finally {
+        csvStream.end();
+      }
+    })();
+
+    return csvStream;
   }
 
   private buildQuery(

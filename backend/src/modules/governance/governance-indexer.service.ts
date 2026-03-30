@@ -74,9 +74,14 @@ export class GovernanceIndexerService implements OnModuleInit {
       return;
     }
 
+    // Extract title from description (first line or first 100 chars)
+    const title =
+      description.split('\n')[0].substring(0, 100) || `Proposal #${onChainId}`;
+
     const proposal = this.proposalRepo.create({
       onChainId,
       proposer,
+      title,
       description,
       status: ProposalStatus.ACTIVE,
       startBlock: Number(startBlock),
@@ -112,6 +117,7 @@ export class GovernanceIndexerService implements OnModuleInit {
       return;
     }
 
+    // Map on-chain support value: 1 = FOR, 0 = AGAINST
     const direction: VoteDirection =
       support === 1 ? VoteDirection.FOR : VoteDirection.AGAINST;
 
@@ -212,6 +218,56 @@ export class GovernanceIndexerService implements OnModuleInit {
   async onModuleDestroy(): Promise<void> {
     if (this.contract) {
       await this.contract.removeAllListeners();
+    }
+  }
+
+  /**
+   * Helper method to update proposal status based on voting outcomes.
+   * Can be called periodically or after significant vote events.
+   * Updates status from Active -> Passed/Failed based on vote tallies.
+   */
+  async updateProposalStatus(proposalId: string): Promise<void> {
+    const proposal = await this.proposalRepo.findOne({
+      where: { id: proposalId },
+      relations: ['votes'],
+    });
+
+    if (!proposal || proposal.status !== ProposalStatus.ACTIVE) {
+      return;
+    }
+
+    // Calculate vote tallies
+    let forVotes = 0;
+    let againstVotes = 0;
+
+    for (const vote of proposal.votes) {
+      const weight = Number(vote.weight);
+      if (vote.direction === VoteDirection.FOR) {
+        forVotes += weight;
+      } else {
+        againstVotes += weight;
+      }
+    }
+
+    // Simple majority logic - can be customized based on DAO rules
+    const totalVotes = forVotes + againstVotes;
+    if (totalVotes > 0) {
+      const forPercentage = (forVotes / totalVotes) * 100;
+
+      // Update status if voting has concluded (can add block height check)
+      if (forPercentage > 50) {
+        proposal.status = ProposalStatus.PASSED;
+        await this.proposalRepo.save(proposal);
+        this.logger.log(
+          `Proposal ${proposal.onChainId} marked as PASSED (${forPercentage.toFixed(2)}% FOR)`,
+        );
+      } else if (forPercentage < 50) {
+        proposal.status = ProposalStatus.FAILED;
+        await this.proposalRepo.save(proposal);
+        this.logger.log(
+          `Proposal ${proposal.onChainId} marked as FAILED (${forPercentage.toFixed(2)}% FOR)`,
+        );
+      }
     }
   }
 }

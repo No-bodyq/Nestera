@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "../components/dashboard/Sidebar";
 import TopNav from "../components/dashboard/TopNav";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 export const metadata = {
   title: "Dashboard - Nestera",
@@ -18,7 +19,9 @@ export default function DashboardLayout({
       <Sidebar />
       <div className="min-h-screen max-w-full px-4 py-5 md:ml-[180px] md:px-6">
         <TopNav />
-        <div className="mt-2">{children}</div>
+        <div className="mt-2">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
       </div>
     </div>
   );

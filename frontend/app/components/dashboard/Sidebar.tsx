@@ -58,9 +58,8 @@ const Sidebar: React.FC = () => {
 
       <aside
         aria-label="Sidebar"
-        style={{ width: 200, minWidth: 180 }}
         className={[
-          "fixed left-0 top-0 h-screen z-50",
+          "fixed left-0 top-0 h-screen z-50 w-50 min-w-45",
           "flex flex-col",
           "bg-[#0d1f28] text-[#d6f6f6]",
           "transition-transform duration-250 ease-in-out",
@@ -89,10 +88,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* Nav */}
-        <nav
-          className="flex-1 flex flex-col px-2 overflow-y-auto"
-          style={{ gap: 4 }}
-        >
+        <nav className="flex-1 flex flex-col px-2 overflow-y-auto gap-1">
           {navLinks.map((l) => {
             const Icon = l.icon as React.ElementType;
             const active = isActive(l.href);
@@ -101,9 +97,8 @@ const Sidebar: React.FC = () => {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                style={{ padding: "11px 12px", fontSize: 14 }}
                 className={[
-                  "flex items-center rounded-xl no-underline font-medium transition-all duration-150 relative",
+                  "flex items-center rounded-xl no-underline font-medium transition-all duration-150 relative px-[11px] py-[11px] text-sm",
                   active
                     ? "bg-[rgba(8,193,193,0.13)] text-[#5de0e0]"
                     : "text-[#6e9aaa] hover:bg-white/5 hover:text-[#b8dfe0]",
@@ -112,13 +107,11 @@ const Sidebar: React.FC = () => {
                 {/* Left border accent for active */}
                 {active && (
                   <span
-                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#08c1c1] rounded-r-full"
-                    style={{ width: 3, height: "55%" }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#08c1c1] rounded-r-full w-0.75 h-1/2"
                   />
                 )}
                 <span
-                  className="flex items-center justify-center shrink-0"
-                  style={{ marginLeft: 8, marginRight: 12 }}
+                  className="flex items-center justify-center shrink-0 ml-2 mr-3"
                 >
                   <Icon size={17} />
                 </span>
@@ -130,10 +123,7 @@ const Sidebar: React.FC = () => {
 
         {/* Footer */}
         <div className="px-3 py-4">
-          <div
-            className="flex items-center gap-2.5 rounded-xl border border-white/5 bg-white/3"
-            style={{ padding: "10px 12px" }}
-          >
+          <div className="flex items-center gap-2.5 rounded-xl border border-white/5 bg-white/3 px-3 py-2.5">
             <div className="relative shrink-0">
               <div className="w-8 h-8 rounded-full bg-[#0d4f4f] flex items-center justify-center text-[#08c1c1] text-xs font-bold">
                 0x
@@ -162,8 +152,7 @@ const Sidebar: React.FC = () => {
 
       {/* Mobile hamburger */}
       <button
-        className="md:hidden fixed top-5 left-4 z-[60] flex items-center justify-center bg-[#0e2330] border border-white/8 rounded-xl text-[#6a9fae] hover:text-white transition-colors cursor-pointer"
-        style={{ width: 38, height: 38 }}
+        className="md:hidden fixed top-5 left-4 z-[60] flex items-center justify-center bg-[#0e2330] border border-white/8 rounded-xl text-[#6a9fae] hover:text-white transition-colors cursor-pointer w-9 h-9"
         onClick={() => setOpen(!open)}
         aria-label="Toggle menu"
       >

@@ -51,33 +51,11 @@ function CustomTooltip({
   const { date, value } = payload[0].payload;
 
   return (
-    <div
-      style={{
-        background: "rgba(8, 20, 24, 0.95)",
-        border: "1px solid rgba(0, 242, 254, 0.3)",
-        borderRadius: 8,
-        padding: "10px 14px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          fontSize: 11,
-          color: "#5e8c96",
-          marginBottom: 4,
-        }}
-      >
+    <div className="bg-[rgba(8,20,24,0.95)] border border-[rgba(0,242,254,0.3)] rounded-lg px-3.5 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+      <p className="m-0 text-[11px] text-[#5e8c96] mb-1">
         {date}, 2023
       </p>
-      <p
-        style={{
-          margin: 0,
-          fontSize: 16,
-          fontWeight: 700,
-          color: "#ffffff",
-        }}
-      >
+      <p className="m-0 text-lg font-bold text-white">
         $
         {value.toLocaleString("en-US", {
           minimumFractionDigits: 2,
@@ -123,39 +101,21 @@ export default function PortfolioPerformanceChart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div
-      className="relative overflow-hidden rounded-2xl border"
-      style={{
-        background:
-          "linear-gradient(180deg, rgba(6,18,20,0.85) 0%, rgba(4,12,14,0.75) 100%)",
-        borderColor: "rgba(8,120,120,0.12)",
-      }}
+<div
+      className="relative overflow-hidden rounded-2xl border border-[rgba(8,120,120,0.12)] bg-linear-to-b from-[rgba(6,18,20,0.85)] to-[rgba(4,12,14,0.75)]"
     >
       {/* ── Header ─────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between px-6 pt-6 pb-2">
         {/* Left section */}
         <div>
-          <p
-            className="text-[11px] tracking-[0.15em] uppercase m-0 mb-1"
-            style={{ color: "#5e8c96" }}
-          >
+          <p className="text-[11px] tracking-[0.15em] uppercase m-0 mb-1 text-[#5e8c96]">
             Total Portfolio Value
           </p>
           <div className="flex items-center gap-3 flex-wrap">
-            <h2
-              className="text-[32px] font-bold m-0 leading-tight"
-              style={{ color: "#ffffff" }}
-            >
+            <h2 className="text-[32px] font-bold m-0 leading-tight text-white">
               $124,592.45
             </h2>
-            <span
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
-              style={{
-                background: "rgba(0, 242, 254, 0.1)",
-                color: "#00f2fe",
-                border: "1px solid rgba(0, 242, 254, 0.15)",
-              }}
-            >
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-[rgba(0,242,254,0.1)] text-[#00f2fe] border border-[rgba(0,242,254,0.15)]">
               <TrendingUp size={12} />
               +12.4%
             </span>
@@ -165,18 +125,7 @@ export default function PortfolioPerformanceChart() {
         {/* Right – overflow menu */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="p-1.5 rounded-lg transition-colors cursor-pointer"
-          style={{
-            color: "#5e8c96",
-            background: "transparent",
-            border: "none",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(0,242,254,0.08)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "transparent")
-          }
+          className="p-1.5 rounded-lg transition-colors cursor-pointer text-[#5e8c96] hover:bg-[rgba(0,242,254,0.08)]"
           aria-label="More options"
         >
           <MoreHorizontal size={18} />
@@ -184,7 +133,7 @@ export default function PortfolioPerformanceChart() {
       </div>
 
       {/* ── Chart ──────────────────────────────────────────────────── */}
-      <div className="w-full" style={{ height: 260 }}>
+      <div className="w-full h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}

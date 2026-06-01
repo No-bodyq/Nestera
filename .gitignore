@@ -92,3 +92,6 @@ PR_DESCRIPTION_ISSUE74.md
 *.bak
 *.backup
 *~
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

@@ -32,6 +32,22 @@ async function bootstrap() {
     defaultVersion: CURRENT_VERSION,
   });
 
+  // CORS configuration — environment-based allowed origins
+  const corsOrigins = configService.get<string[]>('cors.origins');
+  const corsEnabled = configService.get<boolean>('cors.enabled');
+  if (corsEnabled) {
+    app.enableCors({
+      origin: corsOrigins,
+      methods: configService.get<string[]>('cors.methods'),
+      allowedHeaders: configService.get<string[]>('cors.allowedHeaders'),
+      credentials: configService.get<boolean>('cors.credentials'),
+      maxAge: configService.get<number>('cors.maxAge'),
+    });
+    logger.log(`CORS enabled for origins: ${corsOrigins.join(', ')}`);
+  } else {
+    logger.warn('CORS is disabled — not recommended for production');
+  }
+
   // Apply security headers middleware
   app.use(helmet.default());
   app.use(createSecurityHeadersMiddleware());
